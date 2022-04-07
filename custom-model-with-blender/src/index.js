@@ -3,30 +3,78 @@ import "./style/main.css";
 import * as THREE from "three";
 import * as dat from "dat.gui";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { Group } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+
+/**
+ *  Base
+ */
+
+// Debug
+const gui = new dat.GUI()
 
 //Canvas
 const canvas = document.querySelector('canvas.webgl')
 
 //Scene
 const scene = new THREE.Scene()
+
+/**
+ *   Models
+ */
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath('/draco/')
+const gltfLoader = new GLTFLoader()
+gltfLoader.setDRACOLoader(dracoLoader)
+
+let mixer = null
+
+gltfLoader.load(
+  '/models/hamburger.glb',
+  (data) => {
+    console.log(data);
+
+    // while (data.scene.children.length) {
+    //   scene.add(data.scene.children[0])
+    // }
+
+    // const children = [...data.scene.children]
+    // for (const child of children) {
+    //   scene.add(child)
+    // }
+
+    // mixer = new THREE.AnimationMixer(data.scene)
+    
+    // const action = mixer.clipAction(data.animations[2])
+    // action.play()
+
+    data.scene.scale.set(0.2, 0.2, 0.2)
+
+    scene.add(data.scene)
+  },
+)
+
 /**
  * Texture
  */
-
 const textureLoader =  new THREE.TextureLoader()
 
 /**
- * Test cube
+ *  Floor
  */
-
-const cube = new THREE.Mesh(
-  new THREE.BoxBufferGeometry(1, 1, 1),
-  new THREE.MeshBasicMaterial
+const floor = new THREE.Mesh(
+  new THREE.PlaneBufferGeometry(10,10),
+  new THREE.MeshBasicMaterial({
+    color: '#444444',
+    metalness: 0,
+    roughness: 0.5
+  })
 
 )
 
-scene.add(cube)
+floor.rotation.x = - Math.PI * 0.5
+
+scene.add(floor)
 
 
 /**
@@ -67,7 +115,8 @@ window.addEventListener('resize', () => {
 
 //Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height)
-camera.position.z = 5
+camera.position.y = 3
+camera.position.z = 3
 scene.add(camera)
 
 //Controls
@@ -97,9 +146,19 @@ animate();
  */
 
 const clock = new THREE.Clock()
+
+let previousTime = 0
+
 const tick = () =>
 {
   const elapsedTime = clock.getElapsedTime()
+  const deltaTime = elapsedTime - previousTime
+  previousTime = elapsedTime
+  
+  // Update mixer
+  if (mixer !== null) {
+    mixer.update(deltaTime)
+  }
 
   //Update controls
   controls.update()

@@ -12,6 +12,6 @@ three学习案例
 6. 灯光阴影
 7. 物理碰撞
 ## 运行
-进入项目文件夹
-npm run dev 本地运行
-npm run build 上线打包
+### 进入项目文件夹
+1. npm run dev 本地运行
+2. npm run build 上线打包
